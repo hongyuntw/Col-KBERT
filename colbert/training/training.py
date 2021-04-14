@@ -33,8 +33,10 @@ def train(args):
         print("Using args.bsize =", args.bsize, "(per process) and args.accumsteps =", args.accumsteps)
 
     if args.lazy:
+        print('using lazy batcher')
         reader = LazyBatcher(args, (0 if args.rank == -1 else args.rank), args.nranks)
     else:
+        print('using eager batcher')
         reader = EagerBatcher(args, (0 if args.rank == -1 else args.rank), args.nranks)
 
     if args.rank not in [-1, 0]:

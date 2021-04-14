@@ -78,7 +78,10 @@ def evaluate(args):
                 print("\n\n")
 
         print("\n\n")
-        print('Avg Latency =', sum(args.milliseconds[1:]) / len(args.milliseconds[1:]))
+        try:
+            print('Avg Latency =', sum(args.milliseconds[1:]) / len(args.milliseconds[1:]))
+        except:
+            pass
         print("\n\n")
 
     print('\n\n')

@@ -6,7 +6,13 @@ def tensorize_triples(query_tokenizer, doc_tokenizer, queries, positives, negati
     assert bsize is None or len(queries) % bsize == 0
 
     N = len(queries)
-    Q_ids, Q_mask = query_tokenizer.tensorize(queries)
+    # Q_ids,Q_mask =  B x q_len
+    # Q_ids, Q_mask = query_tokenizer.tensorize(queries)
+    Q_ids, Q_mask = query_tokenizer.tensorize_random_mask(queries)
+
+
+    # postives , negatives = B
+    # D_ids,D_mask = 2 * B * seq_len
     D_ids, D_mask = doc_tokenizer.tensorize(positives + negatives)
     D_ids, D_mask = D_ids.view(2, N, -1), D_mask.view(2, N, -1)
 

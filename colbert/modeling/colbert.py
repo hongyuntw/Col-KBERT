@@ -7,7 +7,7 @@ from colbert.parameters import DEVICE
 
 
 class ColBERT(BertPreTrainedModel):
-    def __init__(self, config, query_maxlen, doc_maxlen, mask_punctuation, dim=128, similarity_metric='cosine'):
+    def __init__(self, config, query_maxlen, doc_maxlen, mask_punctuation, dim=128, similarity_metric='cosine', query_weight_layer=False):
 
         super(ColBERT, self).__init__(config)
 
@@ -28,6 +28,8 @@ class ColBERT(BertPreTrainedModel):
         self.bert = BertModel(config)
         self.linear = nn.Linear(config.hidden_size, dim, bias=False)
 
+        self.query_weight_layer = query_weight_layer
+
         self.init_weights()
 
     def forward(self, Q, D):
@@ -35,10 +37,15 @@ class ColBERT(BertPreTrainedModel):
 
     def query(self, input_ids, attention_mask):
         input_ids, attention_mask = input_ids.to(DEVICE), attention_mask.to(DEVICE)
+        # print(input_ids.shape)
+        # print(attention_mask.shape)
         Q = self.bert(input_ids, attention_mask=attention_mask)[0]
         Q = self.linear(Q)
-
-        return torch.nn.functional.normalize(Q, p=2, dim=2)
+        Q = torch.nn.functional.normalize(Q, p=2, dim=2)
+        # print(Q)
+        # print(Q.shape)
+        # exit(1)
+        return Q
 
     def doc(self, input_ids, attention_mask, keep_dims=True):
         input_ids, attention_mask = input_ids.to(DEVICE), attention_mask.to(DEVICE)

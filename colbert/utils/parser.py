@@ -30,6 +30,9 @@ class Arguments():
         # Filtering-related Arguments
         self.add_argument('--mask-punctuation', dest='mask_punctuation', default=False, action='store_true')
 
+        # Use Query weight layer
+        self.add_argument('--query_weight_layer', dest='query_weight_layer' , default=False , action='store_true')
+
     def add_model_training_parameters(self):
         # NOTE: Providing a checkpoint is one thing, --resume is another, --resume_optimizer is yet another.
         self.add_argument('--resume', dest='resume', default=False, action='store_true')
