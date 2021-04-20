@@ -91,11 +91,11 @@ class QueryTokenizer():
                 # if token is Noun or adj and is not stop words and not subword token
                 if ('NN' in p[1] or 'JJ' in p[1]) and (token not in self.nltk_stopwords) and '#' not in token: 
                     new_tokens.append(token)
-                    new_tokens.append('[MASK]')
                     new_masks.append(1)
                     # add 1 means let BERT do self attention with mask token, and zero is not
                     # 不讓bert做self attention代表不讓他破壞句法結構? 最後一層layer再猜
-                    new_masks.append(0)
+                    new_tokens.append('[MASK]')
+                    new_masks.append(1)
                 else:
                     new_tokens.append(token)
                     new_masks.append(1)

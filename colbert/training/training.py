@@ -14,8 +14,10 @@ from colbert.training.eager_batcher import EagerBatcher
 from colbert.parameters import DEVICE
 
 from colbert.modeling.colbert import ColBERT
+from colbert.modeling.colkbert import ColKBERT
 from colbert.utils.utils import print_message
 from colbert.training.utils import print_progress, manage_checkpoints
+from transformers import BertConfig
 
 
 def train(args):
@@ -42,12 +44,27 @@ def train(args):
     if args.rank not in [-1, 0]:
         torch.distributed.barrier()
 
-    colbert = ColBERT.from_pretrained('bert-base-uncased',
+    bert_config = BertConfig().from_pretrained('bert-base-uncased')
+
+    colbert = ColKBERT(bert_config,
                                       query_maxlen=args.query_maxlen,
                                       doc_maxlen=args.doc_maxlen,
                                       dim=args.dim,
                                       similarity_metric=args.similarity,
                                       mask_punctuation=args.mask_punctuation)
+    
+    print('create colkbert success')
+    exit(1)
+
+
+    # origin colbert code
+    # colbert = ColBERT.from_pretrained('bert-base-uncased',
+    #                                   query_maxlen=args.query_maxlen,
+    #                                   doc_maxlen=args.doc_maxlen,
+    #                                   dim=args.dim,
+    #                                   similarity_metric=args.similarity,
+    #                                   mask_punctuation=args.mask_punctuation)
+    # origin colbert code
 
     if args.checkpoint is not None:
         assert args.resume_optimizer is False, "TODO: This would mean reload optimizer too."
