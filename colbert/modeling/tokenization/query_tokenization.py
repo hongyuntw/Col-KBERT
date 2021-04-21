@@ -2,7 +2,7 @@ import torch
 import nltk
 import spacy
 from transformers import BertTokenizerFast
-from colbert.modeling.tokenization.utils import _split_into_batches
+from colbert.modeling.tokenization.utils import _split_into_batches , _split_into_batches_kbert
 
 
 class QueryTokenizer():
@@ -92,10 +92,10 @@ class QueryTokenizer():
                 if ('NN' in p[1] or 'JJ' in p[1]) and (token not in self.nltk_stopwords) and '#' not in token: 
                     new_tokens.append(token)
                     new_masks.append(1)
-                    # add 1 means let BERT do self attention with mask token, and zero is not
+                    # add 1 means let BERT do self attention with mask token (mask_v2), and zero is not(mask_v1)
                     # 不讓bert做self attention代表不讓他破壞句法結構? 最後一層layer再猜
                     new_tokens.append('[MASK]')
-                    new_masks.append(1)
+                    new_masks.append(0)
                 else:
                     new_tokens.append(token)
                     new_masks.append(1)
@@ -128,3 +128,81 @@ class QueryTokenizer():
         return ids, mask
 
     
+
+
+    # training call here to random mask and  bulid KBERT-like attention and soft position
+    def tensorize_kbert(self, batch_text, bsize=None):
+        assert type(batch_text) in [list, tuple], (type(batch_text))
+
+        # add placehold for the [Q] marker
+        batch_text = ['. ' + x for x in batch_text]
+
+        batch_ids = []
+        batch_masks = []
+        batch_soft_pos_ids = []
+        for text in batch_text:
+            tokens = self.tok.tokenize(text)
+            pos = nltk.pos_tag(tokens)
+            new_tokens = []
+            new_masks = []
+            soft_pos_ids = []
+            # this pos for cls
+            soft_pos_ids.append(0)
+            for i in range(len(tokens)):
+                p = pos[i]
+                token = tokens[i]
+                # if token is Noun or adj and is not stop words and not subword token
+                if ('NN' in p[1] or 'JJ' in p[1]) and (token not in self.nltk_stopwords) and '#' not in token: 
+                    new_tokens.append(token)
+                    new_masks.append(1)
+                    soft_pos_ids.append(i+1)
+                    # add 1 means let BERT do self attention with mask token (mask_v2), and zero is not(mask_v1)
+                    # 不讓bert做self attention代表不讓他破壞句法結構? 最後一層layer再猜
+                    new_tokens.append('[MASK]')
+                    new_masks.append(1)
+                    soft_pos_ids.append(i+1)
+                else:
+                    new_tokens.append(token)
+                    new_masks.append(1)
+                    soft_pos_ids.append(i+1)
+
+
+            # padding or truncate
+            if len(new_tokens) >= self.query_maxlen - 2:
+                new_tokens = ['[CLS]'] + new_tokens[:self.query_maxlen - 2] + ['[SEP]']
+                new_masks = [1] + new_masks[:self.query_maxlen - 2] + [0]
+                soft_pos_ids = soft_pos_ids[:self.query_maxlen - 2]
+            else:
+                new_tokens = ['[CLS]'] +  new_tokens + ['[MASK]'] * (self.query_maxlen - 2 - len(new_tokens)) + ['[SEP]']
+                new_masks = new_masks + [0] * (self.query_maxlen - len(new_masks))
+                soft_pos_ids = soft_pos_ids + list(range(soft_pos_ids[-1] + 1 , soft_pos_ids[-1] + 1 + (self.query_maxlen - len(soft_pos_ids))))
+
+
+            new_ids = self.tok.convert_tokens_to_ids(new_tokens)
+            new_ids[1] = self.Q_marker_token_id
+
+            # print(text)
+            # print(new_tokens , len(new_tokens))
+            # print(new_ids , len(new_ids))
+            # print(new_masks , len(new_masks))
+            # print(soft_pos_ids , len(soft_pos_ids))
+            # print('------------')
+            
+
+            batch_ids.append(new_ids)
+            batch_masks.append(new_masks)
+            batch_soft_pos_ids.append(soft_pos_ids)
+        # exit(1)
+
+        ids = torch.tensor(batch_ids)
+        mask = torch.tensor(batch_masks)
+        soft_pos_ids = torch.tensor(batch_soft_pos_ids)
+
+        if bsize:
+            batches = _split_into_batches_kbert(ids, mask, soft_pos_ids, bsize)
+            return batches
+
+        return ids, mask , soft_pos_ids
+
+    
+

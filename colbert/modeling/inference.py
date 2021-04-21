@@ -31,12 +31,14 @@ class ModelInference():
     def queryFromText(self, queries, bsize=None, to_cpu=False):
         if bsize:
             # batches = self.query_tokenizer.tensorize(queries, bsize=bsize)
-            batches = self.query_tokenizer.tensorize_random_mask(queries,bsize=bsize)
+            # batches = self.query_tokenizer.tensorize_random_mask(queries,bsize=bsize)
+            batches = self.query_tokenizer.tensorize_kbert(queries,bsize=bsize)
             batches = [self.query(input_ids, attention_mask, to_cpu=to_cpu) for input_ids, attention_mask in batches]
             return torch.cat(batches)
 
         # input_ids, attention_mask = self.query_tokenizer.tensorize(queries)
-        input_ids, attention_mask = self.query_tokenizer.tensorize_random_mask(queries)
+        # input_ids, attention_mask = self.query_tokenizer.tensorize_random_mask(queries)
+        input_ids, attention_mask = self.query_tokenizer.tensorize_kbert(queries)
         return self.query(input_ids, attention_mask)
 
     def docFromText(self, docs, bsize=None, keep_dims=True, to_cpu=False):

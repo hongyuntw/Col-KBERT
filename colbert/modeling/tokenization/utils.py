@@ -8,7 +8,8 @@ def tensorize_triples(query_tokenizer, doc_tokenizer, queries, positives, negati
     N = len(queries)
     # Q_ids,Q_mask =  B x q_len
     # Q_ids, Q_mask = query_tokenizer.tensorize(queries)
-    Q_ids, Q_mask = query_tokenizer.tensorize_random_mask(queries)
+    # Q_ids, Q_mask = query_tokenizer.tensorize_random_mask(queries)
+    Q_ids, Q_mask = query_tokenizer.tensorize_kbert(queries)
 
 
     # postives , negatives = B
@@ -53,5 +54,12 @@ def _split_into_batches(ids, mask, bsize):
     batches = []
     for offset in range(0, ids.size(0), bsize):
         batches.append((ids[offset:offset+bsize], mask[offset:offset+bsize]))
+
+    return batches
+
+def _split_into_batches_kbert(ids, mask, soft_pos_ids , bsize):
+    batches = []
+    for offset in range(0, ids.size(0), bsize):
+        batches.append((ids[offset:offset+bsize], mask[offset:offset+bsize],soft_pos_ids[offset:offset+bsize]))
 
     return batches

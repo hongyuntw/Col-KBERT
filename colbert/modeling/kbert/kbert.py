@@ -60,6 +60,7 @@ class KBertModel(BertPreTrainedModel):
         attention_mask=None,
         token_type_ids=None,
         position_ids=None,
+        soft_position_ids = None,
         head_mask=None,
         inputs_embeds=None,
         encoder_hidden_states=None,
@@ -147,6 +148,7 @@ class KBertModel(BertPreTrainedModel):
         embedding_output = self.embeddings(
             input_ids=input_ids,
             position_ids=position_ids,
+            soft_position_ids=soft_position_ids,
             token_type_ids=token_type_ids,
             inputs_embeds=inputs_embeds,
             past_key_values_length=past_key_values_length,

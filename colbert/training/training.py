@@ -53,8 +53,8 @@ def train(args):
                                       similarity_metric=args.similarity,
                                       mask_punctuation=args.mask_punctuation)
     
-    print('create colkbert success')
-    exit(1)
+    # print('create colkbert success')
+    # exit(1)
 
 
     # origin colbert code
