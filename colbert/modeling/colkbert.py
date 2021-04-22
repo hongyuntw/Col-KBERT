@@ -5,6 +5,7 @@ import torch.nn as nn
 from transformers import BertPreTrainedModel, BertModel, BertTokenizerFast
 from colbert.parameters import DEVICE
 from colbert.modeling.kbert.kbert import KBertModel
+from transformers import BertModel
 
 
 class ColKBERT(BertPreTrainedModel):

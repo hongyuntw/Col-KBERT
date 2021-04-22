@@ -17,8 +17,8 @@ from colbert.modeling.colbert import ColBERT
 from colbert.modeling.colkbert import ColKBERT
 from colbert.utils.utils import print_message
 from colbert.training.utils import print_progress, manage_checkpoints
-from transformers import BertConfig
-
+from transformers import BertConfig , BertModel
+import copy
 
 def train(args):
     random.seed(12345)
@@ -52,7 +52,15 @@ def train(args):
                                       dim=args.dim,
                                       similarity_metric=args.similarity,
                                       mask_punctuation=args.mask_punctuation)
-    
+    pretrained_bert = BertModel.from_pretrained('bert-base-uncased')
+
+    # copy params
+    pretrained_params = pretrained_bert.named_parameters()
+    colbert_params = colbert.bert.named_parameters()
+    dict_pretrained_params = dict(pretrained_params)
+    dict_colbert_params = dict(colbert_params)
+    dict_pretrained_params['embeddings.soft_position_embeddings.weight'] = copy.deepcopy(dict_pretrained_params['embeddings.position_embeddings.weight'])
+    colbert.bert.load_state_dict(dict_pretrained_params, strict=False)    
     # print('create colkbert success')
     # exit(1)
 
