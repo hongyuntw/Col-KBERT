@@ -4,7 +4,8 @@ import torch
 from transformers.modeling_outputs  import (BaseModelOutputWithPastAndCrossAttentions, 
                                            BaseModelOutputWithPoolingAndCrossAttentions, 
                                            SequenceClassifierOutput)
-from transformers import BertLayer
+from transformers.models.bert.modeling_bert import BertLayer
+# from colbert.modeling.kbert.bert_layer import BertLayer
 
 
 

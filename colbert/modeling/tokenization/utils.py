@@ -9,7 +9,7 @@ def tensorize_triples(query_tokenizer, doc_tokenizer, queries, positives, negati
     # Q_ids,Q_mask =  B x q_len
     # Q_ids, Q_mask = query_tokenizer.tensorize(queries)
     # Q_ids, Q_mask = query_tokenizer.tensorize_random_mask(queries)
-    Q_ids, Q_mask = query_tokenizer.tensorize_kbert(queries)
+    Q_ids, Q_mask , Q_soft_pos_ids = query_tokenizer.tensorize_kbert(queries)
 
 
     # postives , negatives = B
@@ -23,17 +23,28 @@ def tensorize_triples(query_tokenizer, doc_tokenizer, queries, positives, negati
     # Sort by maxlens
     indices = maxlens.sort().indices
     Q_ids, Q_mask = Q_ids[indices], Q_mask[indices]
+    Q_ids, Q_mask , Q_soft_pos_ids = Q_ids[indices], Q_mask[indices] , Q_soft_pos_ids[indices]
+
     D_ids, D_mask = D_ids[:, indices], D_mask[:, indices]
 
     (positive_ids, negative_ids), (positive_mask, negative_mask) = D_ids, D_mask
 
-    query_batches = _split_into_batches(Q_ids, Q_mask, bsize)
+    # query_batches = _split_into_batches(Q_ids, Q_mask, bsize)
+    query_batches = _split_into_batches_kbert(Q_ids, Q_mask, Q_soft_pos_ids, bsize)
+
     positive_batches = _split_into_batches(positive_ids, positive_mask, bsize)
     negative_batches = _split_into_batches(negative_ids, negative_mask, bsize)
 
+    # batches = []
+    # for (q_ids, q_mask), (p_ids, p_mask), (n_ids, n_mask) in zip(query_batches, positive_batches, negative_batches):
+    #     Q = (torch.cat((q_ids, q_ids)), torch.cat((q_mask, q_mask)))
+    #     D = (torch.cat((p_ids, n_ids)), torch.cat((p_mask, n_mask)))
+    #     batches.append((Q, D))
+
     batches = []
-    for (q_ids, q_mask), (p_ids, p_mask), (n_ids, n_mask) in zip(query_batches, positive_batches, negative_batches):
-        Q = (torch.cat((q_ids, q_ids)), torch.cat((q_mask, q_mask)))
+    for (q_ids, q_mask, q_soft_pos_ids), (p_ids, p_mask), (n_ids, n_mask) in zip(query_batches, positive_batches, negative_batches):
+        # Q = (torch.cat((q_ids, q_ids)), torch.cat((q_mask, q_mask)))
+        Q = (torch.cat((q_ids, q_ids)), torch.cat((q_mask, q_mask)), torch.cat((q_soft_pos_ids, q_soft_pos_ids)))
         D = (torch.cat((p_ids, n_ids)), torch.cat((p_mask, n_mask)))
         batches.append((Q, D))
 

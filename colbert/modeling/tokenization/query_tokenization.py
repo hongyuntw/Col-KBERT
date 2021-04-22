@@ -171,11 +171,15 @@ class QueryTokenizer():
             if len(new_tokens) >= self.query_maxlen - 2:
                 new_tokens = ['[CLS]'] + new_tokens[:self.query_maxlen - 2] + ['[SEP]']
                 new_masks = [1] + new_masks[:self.query_maxlen - 2] + [0]
-                soft_pos_ids = soft_pos_ids[:self.query_maxlen - 2]
             else:
                 new_tokens = ['[CLS]'] +  new_tokens + ['[MASK]'] * (self.query_maxlen - 2 - len(new_tokens)) + ['[SEP]']
                 new_masks = new_masks + [0] * (self.query_maxlen - len(new_masks))
+
+            if len(soft_pos_ids) > self.query_maxlen:
+                soft_pos_ids = soft_pos_ids[:self.query_maxlen]
+            else:
                 soft_pos_ids = soft_pos_ids + list(range(soft_pos_ids[-1] + 1 , soft_pos_ids[-1] + 1 + (self.query_maxlen - len(soft_pos_ids))))
+
 
 
             new_ids = self.tok.convert_tokens_to_ids(new_tokens)

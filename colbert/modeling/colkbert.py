@@ -36,9 +36,9 @@ class ColKBERT(BertPreTrainedModel):
     def forward(self, Q, D):
         return self.score(self.query(*Q), self.doc(*D))
 
-    def query(self, input_ids, attention_mask):
-        input_ids, attention_mask = input_ids.to(DEVICE), attention_mask.to(DEVICE)
-        Q = self.bert(input_ids, attention_mask=attention_mask)[0]
+    def query(self, input_ids, attention_mask , soft_pos_ids):
+        input_ids, attention_mask , soft_pos_ids = input_ids.to(DEVICE), attention_mask.to(DEVICE) , soft_pos_ids.to(DEVICE)
+        Q = self.bert(input_ids, attention_mask=attention_mask , soft_position_ids=soft_pos_ids)[0]
         Q = self.linear(Q)
         Q = torch.nn.functional.normalize(Q, p=2, dim=2)
         return Q

@@ -1,5 +1,6 @@
 # -*- encoding:utf-8 -*-
 import torch.nn as nn
+import torch
 # from colbert.modeling.layers.layer_norm import LayerNorm
 # from colbert.modeling.layers.position_ffn import PositionwiseFeedForward
 # from colbert.modeling.layers.multi_headed_attn import MultiHeadedAttention
@@ -7,8 +8,11 @@ import torch.nn as nn
 
 from transformers import BertPreTrainedModel
 from colbert.modeling.kbert.kbert_embeddings import KBertEmbeddings
-from colbert.modeling.kbert.bert_pooler import BertPooler
-from colbert.modeling.kbert.bert_encoder import BertEncoder 
+# from colbert.modeling.kbert.bert_pooler import BertPooler
+# from colbert.modeling.kbert.bert_encoder import BertEncoder
+from transformers.models.bert.modeling_bert import BertEncoder , BertPooler
+
+# from transformers.models.bert.modeling_bert import BertEncoder ,  BertPooler
 from transformers.modeling_outputs import (BaseModelOutputWithPastAndCrossAttentions, 
                                            BaseModelOutputWithPoolingAndCrossAttentions, 
                                            SequenceClassifierOutput,
@@ -163,7 +167,7 @@ class KBertModel(BertPreTrainedModel):
             use_cache=use_cache,
             output_attentions=output_attentions,
             output_hidden_states=output_hidden_states,
-            return_dict=return_dict,
+            return_dict=return_dict
         )
         sequence_output = encoder_outputs[0]
         pooled_output = self.pooler(sequence_output) if self.pooler is not None else None
