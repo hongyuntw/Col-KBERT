@@ -1,13 +1,15 @@
 import torch
 
 from colbert.modeling.colbert import ColBERT
+from colbert.modeling.colkbert import ColKBERT
+
 from colbert.modeling.tokenization import QueryTokenizer, DocTokenizer
 from colbert.utils.amp import MixedPrecisionManager
 from colbert.parameters import DEVICE
 
 
 class ModelInference():
-    def __init__(self, colbert: ColBERT, amp=False):
+    def __init__(self, colbert: ColKBERT, amp=False):
         assert colbert.training is False
 
         self.colbert = colbert
@@ -16,10 +18,10 @@ class ModelInference():
 
         self.amp_manager = MixedPrecisionManager(amp)
 
-    def query(self, *args, to_cpu=False, **kw_args):
+    def query(self, input_ids, attention_mask , soft_pos_ids, to_cpu=False, **kw_args):
         with torch.no_grad():
             with self.amp_manager.context():
-                Q = self.colbert.query(*args, **kw_args)
+                Q = self.colbert.query(input_ids, attention_mask , soft_pos_ids, **kw_args)
                 return Q.cpu() if to_cpu else Q
 
     def doc(self, *args, to_cpu=False, **kw_args):
@@ -33,13 +35,13 @@ class ModelInference():
             # batches = self.query_tokenizer.tensorize(queries, bsize=bsize)
             # batches = self.query_tokenizer.tensorize_random_mask(queries,bsize=bsize)
             batches = self.query_tokenizer.tensorize_kbert(queries,bsize=bsize)
-            batches = [self.query(input_ids, attention_mask, to_cpu=to_cpu) for input_ids, attention_mask in batches]
+            batches = [self.query(input_ids, attention_mask , soft_pos_ids, to_cpu=to_cpu) for input_ids, attention_mask , soft_pos_ids in batches]
             return torch.cat(batches)
 
         # input_ids, attention_mask = self.query_tokenizer.tensorize(queries)
         # input_ids, attention_mask = self.query_tokenizer.tensorize_random_mask(queries)
-        input_ids, attention_mask = self.query_tokenizer.tensorize_kbert(queries)
-        return self.query(input_ids, attention_mask)
+        input_ids, attention_mask , soft_pos_ids = self.query_tokenizer.tensorize_kbert(queries)
+        return self.query(input_ids, attention_mask , soft_pos_ids)
 
     def docFromText(self, docs, bsize=None, keep_dims=True, to_cpu=False):
         if bsize:
