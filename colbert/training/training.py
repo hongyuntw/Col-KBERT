@@ -55,13 +55,14 @@ def train(args):
     pretrained_bert = BertModel.from_pretrained('bert-base-uncased')
 
     # copy params
+    print('copy params...')
     pretrained_params = pretrained_bert.named_parameters()
     colbert_params = colbert.bert.named_parameters()
     dict_pretrained_params = dict(pretrained_params)
     dict_colbert_params = dict(colbert_params)
-    dict_pretrained_params['embeddings.soft_position_embeddings.weight'] = copy.deepcopy(dict_pretrained_params['embeddings.position_embeddings.weight'])
+    # dict_pretrained_params['embeddings.soft_position_embeddings.weight'] = copy.deepcopy(dict_pretrained_params['embeddings.position_embeddings.weight'])
     colbert.bert.load_state_dict(dict_pretrained_params, strict=False)    
-    # print('create colkbert success')
+    print('copy success')
     # exit(1)
 
 

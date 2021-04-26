@@ -32,12 +32,13 @@ class KBertEmbeddings(nn.Module):
 
         if position_ids is None:
             position_ids = self.position_ids[:, past_key_values_length : seq_length + past_key_values_length]
+        # print(position_ids)
 
         if soft_position_ids is None:
             # print('no soft pos')
             soft_position_ids = position_ids
         # else:
-        #     print('soft pos')
+            # print('soft pos')
 
         if token_type_ids is None:
             token_type_ids = torch.zeros(input_shape, dtype=torch.long, device=self.position_ids.device)
